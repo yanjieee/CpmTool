@@ -388,6 +388,9 @@ namespace CpmTool
                 case 2:     //month to date
                     range = "month_to_date";
                     break;
+                case 3:     
+                    range = "yesterday";
+                    break;
             }
             switch (type % 10)
             {

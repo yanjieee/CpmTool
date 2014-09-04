@@ -74,6 +74,7 @@ namespace CpmTool
                 case 0: item.SubItems.Add("Month To Date"); requireType = 20; break;
                 case 1: item.SubItems.Add("Last Month"); requireType = 10; break;
                 case 2: item.SubItems.Add("Last 24 Hours"); requireType = 00; break;
+                case 3: item.SubItems.Add("Yesterday"); requireType = 30; break;
                 default: item.SubItems.Add("Month To Date"); requireType = 20; break;
             }
             item.BackColor = Color.Pink;
@@ -356,8 +357,17 @@ namespace CpmTool
         {
             switch(comboBox2.SelectedIndex)
             {
-                case 0: comboBox1.Items[2] = "Last 24 Hours"; break;
-                case 1: comboBox1.Items[2] = "Last 48 Hours"; break;
+                case 0: 
+                    comboBox1.Items[2] = "Last 24 Hours";
+                    if (comboBox1.Items.Count > 3)
+                    {
+                        comboBox1.Items.RemoveAt(3);
+                    }
+                    break;
+                case 1: 
+                    comboBox1.Items[2] = "Last 48 Hours"; 
+                    comboBox1.Items.Add("Yesterday"); 
+                    break;
             }
             comboBox3.Items.Clear();
             comboBox3.Items.Add("全部");
