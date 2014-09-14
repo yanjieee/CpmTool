@@ -28,14 +28,14 @@ namespace CpmTool
 
             _form2 = new Form2();
 
-            System.Net.ServicePointManager.DefaultConnectionLimit = 50;
+            System.Net.ServicePointManager.DefaultConnectionLimit = 512;
 
             comboBox1.SelectedIndex = 0;
-            comboBox2.SelectedIndex = 0;
+            comboBox2.SelectedIndex = 1;
             comboBox4.SelectedIndex = 0;
         }
 
-        private readonly static int MAX_THREAD = 10;
+        private readonly static int MAX_THREAD = 50;
 
         private int requireType = 0;
         private List<TAccount> accounts;
@@ -110,14 +110,6 @@ namespace CpmTool
             }
             else
             {
-                
-                hasReadedCount++;
-                if (hasReadedCount >= this.accounts.Count)
-                {
-                    this.button1.Enabled = true;
-                    this.comboBox1.Enabled = true;
-                    this.comboBox2.Enabled = true;
-                }
                 if (isSuccess)
                 {
                     if (listView1.Columns.Count == 0)
@@ -136,10 +128,10 @@ namespace CpmTool
                             listView1.Columns.Add(s);
                         }
 
-                        listView1.Columns.Add("sitename");
+                        //listView1.Columns.Add("sitename");
                         listView1.Columns.Add("company");
-                        listView1.Columns.Add("volume");
-                        listView1.Columns.Add("revenue");
+                        //listView1.Columns.Add("volume");
+                        //listView1.Columns.Add("revenue");
 
                         foreach (ColumnHeader h in listView1.Columns)
                         {
@@ -163,10 +155,10 @@ namespace CpmTool
 
                     TAccount acc = DB.getInstence().getAccount(accounts[dbIndex].ID);
 
-                    item.SubItems.Add(acc.sitename);
+                    //item.SubItems.Add(acc.sitename);
                     item.SubItems.Add(acc.company);
-                    item.SubItems.Add(acc.volume.ToString());
-                    item.SubItems.Add(acc.revenue.ToString());
+                    //item.SubItems.Add(acc.volume.ToString());
+                    //item.SubItems.Add(acc.revenue.ToString());
 
                     if (accounts[dbIndex].important)
                     {
@@ -186,7 +178,61 @@ namespace CpmTool
                     item.Tag = dbIndex;
                     listView1.Items.Add(item);
                 }
-                
+                hasReadedCount++;
+                if (hasReadedCount >= this.accounts.Count)
+                {
+                    //读取完成
+                    if (requireType / 10 == 3)
+                    {
+                        //yesterday
+                        //统计所有
+                        int tmp = -1;
+                        foreach (ColumnHeader ch in listView1.Columns)
+                        {
+                            if (ch.Text.Contains("Revenue"))
+                            {
+                                tmp = ch.Index;
+                                break;
+                            }
+                        }
+                        if (tmp != -1)
+                        {
+                            float total_revenue = 0;
+                            foreach (ListViewItem item in listView1.Items)
+                            {
+                                if (item.SubItems.Count > tmp && item.SubItems[tmp] != null)
+                                {
+                                    total_revenue += float.Parse(item.SubItems[tmp].Text.Replace("$", ""));
+                                }
+                            }
+                            listView1.Items.Add(new ListViewItem("收入总计：$" + total_revenue.ToString()));
+                        }
+                        tmp = -1;
+                        foreach (ColumnHeader ch in listView1.Columns)
+                        {
+                            if (ch.Text.Contains("ID数"))
+                            {
+                                tmp = ch.Index;
+                                break;
+                            }
+                        }
+                        if (tmp != -1)
+                        {
+                            int id_sum = 0;
+                            foreach (ListViewItem item in listView1.Items)
+                            {
+                                if (item.SubItems.Count > tmp && item.SubItems[tmp] != null)
+                                {
+                                    id_sum += int.Parse(item.SubItems[tmp].Text);
+                                }
+                            }
+                            listView1.Items.Add(new ListViewItem("ID总计：" + id_sum.ToString()));
+                        }
+                    }
+                    this.button1.Enabled = true;
+                    this.comboBox1.Enabled = true;
+                    this.comboBox2.Enabled = true;
+                }
 
                 
                 threadSum++;

@@ -388,8 +388,8 @@ namespace CpmTool
                 case 2:     //month to date
                     range = "month_to_date";
                     break;
-                case 3:     
-                    range = "yesterday";
+                case 3:
+                    range = "yesterday" + "&report%5Bgroup_by%5D%5B%5D=placement_id";
                     break;
             }
             switch (type % 10)
@@ -401,6 +401,7 @@ namespace CpmTool
                     interval = "day" + "report%5Bfixed_columns%5D%5B%5D=day&report%5Bgroup_by%5D%5B%5D=day";
                     break;
             }
+            //report[group_by][]:placement_id
             string timezone = "Asia%2FHong_Kong";
             switch (this.timezone)
             {
@@ -463,6 +464,13 @@ namespace CpmTool
                 //day
                 isDayStr = "&columns%5B%5D=day";
             }
+            switch (this.requireType / 10)
+            {
+                case 3:
+                    //yesterday
+                    isDayStr = "&columns%5B%5D=placement";
+                    break;
+            }
 
             double timeRand = GetTimeLikeJS();
             double back = new Random().NextDouble() * 100;
@@ -514,6 +522,27 @@ namespace CpmTool
                 }
                 data = data.Remove(0, data.IndexOf("</tr>") + 5);
             }
+            if (this.requireType / 10 == 3)
+            {
+                //yesterday with id
+                data = GetMid(html, "\"total\":\"", "\",");
+                data = data.Replace("\\", "");
+                while (data.IndexOf("<tr") >= 0)
+                {
+                    string tmpTd = getInnerhtml(data, "tr");
+                    List<string> strList = new List<string>();
+                    while (tmpTd.IndexOf("<td") >= 0)
+                    {
+                        strList.Add(ExecRepaceHTML(getInnerhtml(tmpTd, "td")));
+                        tmpTd = tmpTd.Remove(0, tmpTd.IndexOf("</td>") + 5);
+                    }
+                    if (strList.Count > 0)
+                    {
+                        list.Add(strList);
+                    }
+                    data = data.Remove(0, data.IndexOf("</tr>") + 5);
+                }
+            }
             return list;
         }
 
@@ -543,7 +572,9 @@ namespace CpmTool
             getStatusUrl = string.Format(getStatusUrl, ui_version);
             getUrl = string.Format(getUrl, ui_version);
 
+            //string test = "report%5Bcategory%5D=publisher_login&report%5Btype%5D=analytics&report%5Bformat%5D=standard&report%5Brange%5D=yesterday&report%5Bstart_date%5D=&report%5Bend_date%5D=&report%5Binterval%5D=cumulative&report%5Btimezone%5D=EST5EDT&report%5Bmetrics%5D%5B%5D=imps_total&report%5Bmetrics%5D%5B%5D=clicks&report%5Bmetrics%5D%5B%5D=total_convs&report%5Bmetrics%5D%5B%5D=publisher_revenue&report%5Bmetrics%5D%5B%5D=publisher_rpm&report%5Bshow_usd_currency%5D=true&report%5Bgroup_by%5D%5B%5D=placement_id&report%5Brun_type%5D=run_now&report%5Bemail_format%5D=excel&report%5Bpre_send_now_email_addresses%5D=lpita%40sonital.com&report%5Bschedule_when%5D=daily&report%5Bschedule_format%5D=excel&report%5Bschedule_email_addresses%5D=&report%5Bname%5D=&report%5Btimezone%5D=EST5EDT";
             html = DoPost(getIdUrl, getIdPostContent(this.requireType), "");
+            //html = DoPost(getIdUrl, test, "");
             if (html == "" || html.IndexOf("report_id") == -1)
             {
                 goto GetData;
@@ -561,7 +592,40 @@ namespace CpmTool
                 goto GetData;
             }
             List<List<string>> result = processDatas(html);
-            this.onDidGetData(result, true, this.dbIndex);
+            if (result.Count<2)
+            {
+                this.onDidGetData(result, false, this.dbIndex);
+            }
+            else
+            {
+                if (this.requireType / 10 == 3)
+                {
+                    //yesterday with id
+                    List<List<string>> tmp = new List<List<string>>();
+                    result[0].RemoveAt(0);//删除placement字段，因为会显示total而已
+                    result[0].Add("ID数");
+                    result[0].Add("平均流量");
+                    tmp.Add(result[0]);
+                    if (result.Count > 2)
+                    {
+                        //ID数
+                        int id_sum = result.Count - 2;
+                        result[result.Count - 1].Add(id_sum.ToString());
+                        int temp = int.Parse(result[result.Count - 1][1].Replace(",", ""));
+                        temp = temp / id_sum / 24;
+                        result[result.Count - 1].Add(temp.ToString());
+                    }
+                    else
+                    {
+                        result[result.Count - 1].Add("");
+                        result[result.Count - 1].Add("");
+                    }
+                    result[result.Count - 1].RemoveAt(0);//删除placement字段，因为会显示total而已
+                    tmp.Add(result[result.Count - 1]);
+                    result = tmp;
+                }
+                this.onDidGetData(result, true, this.dbIndex);
+            }
         }
 
 
