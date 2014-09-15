@@ -602,17 +602,44 @@ namespace CpmTool
                 {
                     //yesterday with id
                     List<List<string>> tmp = new List<List<string>>();
-                    result[0].RemoveAt(0);//删除placement字段，因为会显示total而已
                     result[0].Add("ID数");
                     result[0].Add("平均流量");
                     tmp.Add(result[0]);
                     if (result.Count > 2)
                     {
                         //ID数
+                        int imps = -1;
+                        for (int i = 0; i < result[0].Count; i++ )
+                        {
+                            if (result[0][i].Contains("Imps"))
+                            {
+                                imps = i;
+                                break;
+                            }
+                        }
                         int id_sum = result.Count - 2;
+                        if (imps != -1)
+                        {
+                            //去掉imps<10的ID
+                            for (int i = 1; i < result.Count - 1; i++)
+                            {
+                                int imp = int.Parse(result[i][imps].Replace(",", ""));
+                                if (imp <= 10)
+                                {
+                                    id_sum--;
+                                }
+                            }
+                        }
                         result[result.Count - 1].Add(id_sum.ToString());
                         int temp = int.Parse(result[result.Count - 1][1].Replace(",", ""));
-                        temp = temp / id_sum / 24;
+                        if (id_sum != 0)
+                        {
+                            temp = temp / id_sum / 24;
+                        }
+                        else
+                        {
+                            temp = 0;
+                        }
                         result[result.Count - 1].Add(temp.ToString());
                     }
                     else
@@ -620,6 +647,7 @@ namespace CpmTool
                         result[result.Count - 1].Add("");
                         result[result.Count - 1].Add("");
                     }
+                    result[0].RemoveAt(0);//删除placement字段，因为会显示total而已
                     result[result.Count - 1].RemoveAt(0);//删除placement字段，因为会显示total而已
                     tmp.Add(result[result.Count - 1]);
                     result = tmp;

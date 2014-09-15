@@ -30,7 +30,7 @@ namespace CpmTool
 
             System.Net.ServicePointManager.DefaultConnectionLimit = 512;
 
-            comboBox1.SelectedIndex = 0;
+            comboBox1.SelectedIndex = 3;
             comboBox2.SelectedIndex = 1;
             comboBox4.SelectedIndex = 0;
         }
@@ -411,8 +411,11 @@ namespace CpmTool
                     }
                     break;
                 case 1: 
-                    comboBox1.Items[2] = "Last 48 Hours"; 
-                    comboBox1.Items.Add("Yesterday"); 
+                    comboBox1.Items[2] = "Last 48 Hours";
+                    if (comboBox1.Items.Count <= 3)
+                    {
+                        comboBox1.Items.Add("Yesterday"); 
+                    }
                     break;
             }
             comboBox3.Items.Clear();
