@@ -642,13 +642,21 @@ namespace CpmTool
                         }
                         result[result.Count - 1].Add(temp.ToString());
                     }
+                    else if (result.Count == 2)
+                    {
+                        //如果只有2个，表示该号只有一个ID
+                        result[result.Count - 1].Add("1");
+                        int temp = int.Parse(result[result.Count - 1][1].Replace(",", ""));
+                        temp = temp / 24;
+                        result[result.Count - 1].Add(temp.ToString());
+                    }
                     else
                     {
                         result[result.Count - 1].Add("");
                         result[result.Count - 1].Add("");
                     }
                     result[0].RemoveAt(0);//删除placement字段，因为会显示total而已
-                    result[result.Count - 1].RemoveAt(0);//删除placement字段，因为会显示total而已
+                    result[result.Count - 1].RemoveAt(0);//删除placement字段，因为会显示(total/唯一的ID)而已
                     tmp.Add(result[result.Count - 1]);
                     result = tmp;
                 }
