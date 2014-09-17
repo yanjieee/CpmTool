@@ -18,6 +18,8 @@ namespace CpmTool
 
     public partial class Form1 : Form
     {
+        public static Boolean isForWG = false;
+
         public Form1()
         {
             InitializeComponent();
@@ -182,7 +184,7 @@ namespace CpmTool
                 if (hasReadedCount >= this.accounts.Count)
                 {
                     //读取完成
-                    if (requireType / 10 == 3)
+                    if (requireType / 10 == 3 && !isForWG)
                     {
                         //yesterday
                         //统计所有

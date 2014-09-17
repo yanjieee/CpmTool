@@ -598,6 +598,18 @@ namespace CpmTool
             }
             else
             {
+                if (Form1.isForWG)
+                {
+                    List<List<string>> tmp = new List<List<string>>();
+                    result[0].RemoveAt(0);//删除placement字段，因为会显示total而已
+                    result[result.Count - 1].RemoveAt(0);//删除placement字段，因为会显示(total/唯一的ID)而已
+                    tmp.Add(result[0]);
+                    tmp.Add(result[result.Count - 1]);
+                    result = tmp;
+                    this.onDidGetData(result, true, this.dbIndex);
+                    return;
+                }
+
                 if (this.requireType / 10 == 3)
                 {
                     //yesterday with id
