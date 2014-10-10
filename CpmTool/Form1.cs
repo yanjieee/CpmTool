@@ -37,7 +37,7 @@ namespace CpmTool
             comboBox4.SelectedIndex = 0;
         }
 
-        private readonly static int MAX_THREAD = 50;
+        private readonly static int MAX_THREAD = 200;
 
         private int requireType = 0;
         private List<TAccount> accounts;
