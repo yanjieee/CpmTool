@@ -548,10 +548,10 @@ namespace CpmTool
 
         private void run_onlinemedia()
         {
-            const string loginUrl = "http://user.creafi-online-media.com/index/sign-in";
-            string getIdUrl = "http://user.creafi-online-media.com/{0}/report/get-id";
-            string getStatusUrl = "http://user.creafi-online-media.com/{0}/report/check-report-status";
-            string getUrl = "http://user.creafi-online-media.com/{0}/report/get";
+            const string loginUrl = "https://console.appnexus.com/index/sign-in";
+            string getIdUrl = "https://console.appnexus.com/{0}/report/get-id";
+            string getStatusUrl = "https://console.appnexus.com/{0}/report/check-report-status";
+            string getUrl = "https://console.appnexus.com/{0}/report/get";
 
         Login:
             string html = "";
