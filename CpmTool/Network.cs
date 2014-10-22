@@ -555,8 +555,8 @@ namespace CpmTool
 
         Login:
             string html = "";
-            string content = "redir=&app_id=&app_redirect=&username=" + this.username
-                           + "&password=" + this.password;
+            string content = "redir=&app_id=&app_redirect=&username=" + Uri.EscapeDataString(this.username)
+                           + "&password=" + Uri.EscapeDataString(this.password);
             html = DoPost(loginUrl, content, "");
             if (html == "" || html.IndexOf("Sign Out") == -1)
             {
