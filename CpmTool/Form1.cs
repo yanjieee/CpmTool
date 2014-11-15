@@ -35,6 +35,10 @@ namespace CpmTool
             comboBox1.SelectedIndex = 3;
             comboBox2.SelectedIndex = 1;
             comboBox4.SelectedIndex = 0;
+
+            DateTime dt = DateTime.Now;
+            textBox1.Text = dt.ToString("MM/dd/yyyy");
+            textBox2.Text = dt.ToString("MM/dd/yyyy");
         }
 
         private readonly static int MAX_THREAD = 200;
@@ -77,6 +81,7 @@ namespace CpmTool
                 case 1: item.SubItems.Add("Last Month"); requireType = 10; break;
                 case 2: item.SubItems.Add("Last 24 Hours"); requireType = 00; break;
                 case 3: item.SubItems.Add("Yesterday"); requireType = 30; break;
+                case 4: item.SubItems.Add("Custom"); requireType = 40; break;
                 default: item.SubItems.Add("Month To Date"); requireType = 20; break;
             }
             item.BackColor = Color.Pink;
@@ -94,7 +99,8 @@ namespace CpmTool
             {
                 threadSum--;
                 TAccount acc = this.accounts[nowAccountNum];
-                Network net = new Network(this.currentSiteType, nowAccountNum, requireType, acc.username, acc.password, this.doGetData, this.comboBox4.SelectedIndex);
+                Network net = new Network(this.currentSiteType, nowAccountNum, requireType, acc.username, acc.password, this.doGetData, this.comboBox4.SelectedIndex,
+                    textBox1.Text, textBox2.Text);
                 Thread thread = new Thread(new ThreadStart(net.run));
                 thread.IsBackground = true;
                 thread.Start();

@@ -31,8 +31,24 @@ namespace CpmTool
         private string password;
         private int dbIndex;
         private int timezone = 0;
+
+        private string startDate, endDate;
         
         public event DelegateDidGetData onDidGetData;
+
+        public Network(int sitetype, int dbIndex, int requireType, string user, string pwd, DelegateDidGetData del, int timezone,
+            string start_date, string end_date)
+        {
+            this.onDidGetData += new DelegateDidGetData(del);
+            this.requireType = requireType;
+            this.siteType = sitetype;
+            this.username = user;
+            this.password = pwd;
+            this.dbIndex = dbIndex;
+            this.timezone = timezone;
+            this.startDate = Uri.EscapeDataString(start_date);
+            this.endDate = Uri.EscapeDataString(end_date);
+        }
 
         public Network(int sitetype, int dbIndex, int requireType, string user, string pwd, DelegateDidGetData del, int timezone)
         {
@@ -43,6 +59,8 @@ namespace CpmTool
             this.password = pwd;
             this.dbIndex = dbIndex;
             this.timezone = timezone;
+            this.startDate = "";
+            this.endDate = "";
         }
 
         public void run()
@@ -377,6 +395,8 @@ namespace CpmTool
         {
             string range = "";
             string interval = "";
+            string start_date = "";
+            string end_date = "";
             switch (type / 10)
             {
                 case 0:     //last 24 hours
@@ -390,6 +410,11 @@ namespace CpmTool
                     break;
                 case 3:
                     range = "yesterday" + "&report%5Bgroup_by%5D%5B%5D=placement_id";
+                    break;
+                case 4:
+                    range = "custom";
+                    start_date = this.startDate;
+                    end_date = this.endDate;
                     break;
             }
             switch (type % 10)
@@ -423,7 +448,8 @@ namespace CpmTool
             //EST5EDT
             string content  = "report%5Bcategory%5D=publisher_login&report%5Btype%5D=analytics&report%5Bformat%5D=standard"
                             + "&report%5Brange%5D=" + range
-                            + "&report%5Bstart_date%5D=&report%5Bend_date%5D="
+                            + "&report%5Bstart_date%5D=" + start_date
+                            + "&report%5Bend_date%5D=" + end_date
                             + "&report%5Binterval%5D=" + interval
                             + "&report%5Btimezone%5D=" + timezone
                             + "&report%5Bmetrics%5D%5B%5D=imps_total"
