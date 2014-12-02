@@ -75,7 +75,18 @@ namespace CpmTool
         private String DoGet(String url, String referer)
         {
             String data = "";
-            HttpWebRequest webReqst = (HttpWebRequest)WebRequest.Create(url);
+            HttpWebRequest webReqst = null;
+            //如果是发送HTTPS请求  
+            if (url.StartsWith("https", StringComparison.OrdinalIgnoreCase))
+            {
+                ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(CheckValidationResult);
+                webReqst = WebRequest.Create(url) as HttpWebRequest;
+                webReqst.ProtocolVersion = HttpVersion.Version10;
+            }
+            else
+            {
+                webReqst = WebRequest.Create(url) as HttpWebRequest;
+            }
             webReqst.Method = "GET";
             webReqst.UserAgent = DefaultUserAgent;
             webReqst.KeepAlive = true;
@@ -306,12 +317,19 @@ namespace CpmTool
             const string Interval2NoneUrl = "https://my.yieldmanager.com/reports/changeGrouping.php?action=change_grouping&type=publisher&filter=Interval&value=0&intervalStr=none&inc=11&art=";
 
         Login:
-            string content = "redir=&username="
-                            + this.username
+            string html = DoGet(loginStr, "");
+            string crumbsig = GetMid(html, "crumbsig\" value=\"", "\"");
+            string crumbenc = GetMid(html, "crumbenc\" value=\"", "\"");
+            string content = "redir=&crumbsig="
+                            + Uri.EscapeDataString(crumbsig)
+                            + "&crumbenc="
+                            + Uri.EscapeDataString(crumbenc)
+                            + "&username="
+                            + Uri.EscapeDataString(this.username)
                             + "&password="
-                            + this.password
+                            + Uri.EscapeDataString(this.password)
                             + "&x=32&y=14";
-            string html = DoPost(loginStr, content, "");
+            html = DoPost(loginStr, content, "");
             if (html == "" || html.IndexOf("logout=1") == -1)
             {
                 //登录失败

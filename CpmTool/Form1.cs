@@ -413,8 +413,9 @@ namespace CpmTool
             {
                 case 0: 
                     comboBox1.Items[2] = "Last 24 Hours";
-                    if (comboBox1.Items.Count > 3)
+                    if (comboBox1.Items.Count > 4)
                     {
+                        comboBox1.Items.RemoveAt(4);
                         comboBox1.Items.RemoveAt(3);
                     }
                     break;
@@ -422,7 +423,8 @@ namespace CpmTool
                     comboBox1.Items[2] = "Last 48 Hours";
                     if (comboBox1.Items.Count <= 3)
                     {
-                        comboBox1.Items.Add("Yesterday"); 
+                        comboBox1.Items.Add("Yesterday");
+                        comboBox1.Items.Add("Custom");
                     }
                     break;
             }
