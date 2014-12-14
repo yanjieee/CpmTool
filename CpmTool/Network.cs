@@ -33,6 +33,8 @@ namespace CpmTool
         private int timezone = 0;
 
         private string startDate, endDate;
+
+        private string pre_send_now_email_address = "";
         
         public event DelegateDidGetData onDidGetData;
 
@@ -63,13 +65,18 @@ namespace CpmTool
             this.endDate = "";
         }
 
-        public void run()
+        public void run(object obj)
         {
             switch(this.siteType)
             {
                 case 0: run_yieldmanager(); break;
                 case 1: run_onlinemedia(); break;
             }
+        }
+
+        public void run()
+        {
+            run(null);
         }
 
         private String DoGet(String url, String referer)
@@ -464,7 +471,7 @@ namespace CpmTool
             //Asia%2FHong_Kong
             //UTC
             //EST5EDT
-            string content  = "report%5Bcategory%5D=publisher_login&report%5Btype%5D=analytics&report%5Bformat%5D=standard"
+            string content = "report%5Bcategory%5D=publisher_login&report%5Btype%5D=analytics&report%5Bformat%5D=standard"
                             + "&report%5Brange%5D=" + range
                             + "&report%5Bstart_date%5D=" + start_date
                             + "&report%5Bend_date%5D=" + end_date
@@ -472,10 +479,12 @@ namespace CpmTool
                             + "&report%5Btimezone%5D=" + timezone
                             + "&report%5Bmetrics%5D%5B%5D=imps_total"
                             + "&report%5Bmetrics%5D%5B%5D=clicks&report%5Bmetrics%5D%5B%5D=total_convs&report%5Bmetrics%5D%5B%5D=publisher_revenue"
-                            + "&report%5Bmetrics%5D%5B%5D=publisher_rpm&report%5Bshow_usd_currency%5D=true&report%5Brun_type%5D=run_now"
-                            + "&report%5Bemail_format%5D=excel&report%5Bpre_send_now_email_addresses%5D=miguel%40creafi-online-media.com"
+                            + "&report%5Bmetrics%5D%5B%5D=publisher_rpm&report%5Brun_type%5D=run_now"
+                            + "&report%5Bemail_format%5D=excel&report%5Bpre_send_now_email_addresses%5D=" + pre_send_now_email_address
                             + "&report%5Bschedule_when%5D=daily"
-                            + "&report%5Bschedule_format%5D=excel&report%5Bschedule_email_addresses%5D=&report%5Bname%5D=&report%5Btimezone%5D="
+                            + "&report%5Bschedule_format%5D=excel&report%5Bschedule_email_addresses%5D="
+                            + "&report%5Bname%5D=Report&report%5Bid%5D=undefined&report%5Blast_modified%5D=undefined"
+                            + "&report%5Btimezone%5D="
                             + timezone;
             return content;
         }
@@ -593,6 +602,7 @@ namespace CpmTool
         private void run_onlinemedia()
         {
             const string loginUrl = "https://console.appnexus.com/index/sign-in";
+            const string signoutUrl = "https://console.appnexus.com/index/signout";
             string getIdUrl = "https://console.appnexus.com/{0}/report/get-id";
             string getStatusUrl = "https://console.appnexus.com/{0}/report/check-report-status";
             string getUrl = "https://console.appnexus.com/{0}/report/get";
@@ -608,7 +618,8 @@ namespace CpmTool
             }
 
         GetData:
-
+            pre_send_now_email_address = GetMid(html, "id=\"pre-send-now-email-address\" value=\"", "\"");
+            pre_send_now_email_address = Uri.EscapeDataString(pre_send_now_email_address);
             string page_id = GetMid(html, "page_id = '", "'");
             //增加ui_version格式化url  2013/11/27 
             string ui_version = GetMid(html, "ui_version = '", "'");
@@ -624,12 +635,28 @@ namespace CpmTool
                 goto GetData;
             }
             string reportId = GetMid(html, "\"report_id\":\"", "\"");
-            html = DoPost(getStatusUrl, getStatusPostContent(reportId, page_id), "");
-            if (html == "" || html.IndexOf("OK") == -1)
+            string readyId = "";
+            int pendingCount = 0;   //有时候会被挂起，原因不明，超过三次认为失败了
+            while(readyId == "")
             {
-                goto GetData;
+                html = DoPost(getStatusUrl, getStatusPostContent(reportId, page_id), "");
+                if (html == "" || html.IndexOf("OK") == -1)
+                {
+                    goto GetData;
+                }
+                readyId = GetMid(html, "\"ready\":[\"", "\"");
+                if (readyId == "")
+                {
+                    pendingCount++;
+                    Thread.Sleep(30 * 1000);
+                }
+                if (pendingCount >= 3)
+                {
+                    this.onDidGetData(new List<List<string>>() { new List<string>(){"pending! retry later"}}, false, this.dbIndex);
+                    return;
+                }
+                
             }
-            string readyId = GetMid(html,"\"ready\":[\"", "\"");
             html = DoPost(getUrl, getPostContent(readyId, page_id), "");
             if (html == "" || html.IndexOf("OK") == -1)
             {
@@ -638,7 +665,7 @@ namespace CpmTool
             List<List<string>> result = processDatas(html);
             if (result.Count<2)
             {
-                this.onDidGetData(result, false, this.dbIndex);
+                this.onDidGetData(null, false, this.dbIndex);
             }
             else
             {

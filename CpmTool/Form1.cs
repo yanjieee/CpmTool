@@ -181,7 +181,14 @@ namespace CpmTool
                     //获取失败
                     ListViewItem item = new ListViewItem();
                     item.SubItems.Add(accounts[dbIndex].username);
-                    item.SubItems.Add("无数据");
+                    if (data == null)
+                    {
+                        item.SubItems.Add("无数据");
+                    } 
+                    else
+                    {
+                        item.SubItems.Add(data[0][0]);
+                    }
                     item.ForeColor = Color.Gray;
                     item.Tag = dbIndex;
                     listView1.Items.Add(item);
