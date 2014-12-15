@@ -24,7 +24,7 @@ namespace CpmTool
         private CookieContainer CC = new CookieContainer();
         private static readonly string DefaultUserAgent = "mozilla/5.0 (windows nt 5.1) applewebkit/537.11 (khtml, like gecko) "
                                                 + "chrome/23.0.1271.95 safari/537.11";
-        private static readonly int RequestTimeout = 30000;
+        private static readonly int RequestTimeout = 60000;
         private int siteType;
         private int requireType;
         private string username;
@@ -637,6 +637,7 @@ namespace CpmTool
             string reportId = GetMid(html, "\"report_id\":\"", "\"");
             string readyId = "";
             int pendingCount = 0;   //有时候会被挂起，原因不明，超过三次认为失败了
+            Thread.Sleep(5 * 1000);
             while(readyId == "")
             {
                 html = DoPost(getStatusUrl, getStatusPostContent(reportId, page_id), "");
